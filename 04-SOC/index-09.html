@@ -19,6 +19,7 @@
 		}
 	</style>
 	<script src="jquery-3.3.1.js"></script>
+	<script src="handlebars.js"></script>
 	<script>
 		String.prototype.toInt = function() {
 			return parseInt(this, 10);
@@ -60,6 +61,16 @@
 
 			this.subscribe = function(attrName, listenerFn){
 				_listeners[attrName].push(listenerFn);
+			};
+
+			this.toJSON = function(){
+				return {
+					basic : _data.basic,
+					hra : _data.hra,
+					da : _data.da,
+					tax : _data.tax,
+					salary : _data.salary
+				};
 			}
 			
 		}
@@ -77,19 +88,19 @@
 				<section>
 					<div class="field">
 						<label for="">Basic :</label>
-						<input type="number" id="txtBasic">
+						<input type="number" id="txtBasic" value="{{basic}}">
 					</div>
 					<div class="field">
 						<label for="">HRA :</label>
-						<input type="number" id="txtHra">
+						<input type="number" id="txtHra" value="{{hra}}">
 					</div>
 					<div class="field">
 						<label for="">DA :</label>
-						<input type="number" id="txtDa">
+						<input type="number" id="txtDa" value="{{da}}">
 					</div>
 					<div class="field">
 						<label for="">Tax :</label>
-						<input type="range" id="rangeTax" min="0" max="30" value="0">
+						<input type="range" id="rangeTax" min="0" max="30" value="{{tax}}">
 					</div>
 					<div class="field">
 						<input type="button" value="Calculate" id="btnCalculate">
@@ -98,11 +109,11 @@
 						<table>
 							<tbody>
 								<tr>
-									<td id="tdBasic">[Basic]</td>
-									<td id="tdHra">[Hra]</td>
-									<td id="tdDa">[Da]</td>
-									<td id="tdTax">[Tax]</td>
-									<td id="tdSalary">[Salary]</td>
+									<td id="tdBasic">{{basic}}</td>
+									<td id="tdHra">{{hra}}</td>
+									<td id="tdDa">{{da}}</td>
+									<td id="tdTax">{{tax}}</td>
+									<td id="tdSalary">{{salary}}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -110,10 +121,14 @@
 				</section>
 			`;
 
+			var templateFn = Handlebars.compile(_template);
+
 			var $root = this.$root = $('<div></div>');
 
 			this.render = function(){
-				$root.html(_template);
+				var modelData = model.toJSON();
+				var generatedHTML = templateFn(modelData);
+				$root.html(generatedHTML);
 			};
 
 			//React to user actions
@@ -138,28 +153,18 @@
 			});
 
 			//React to model changes
-			model.subscribe('salary', function(){
-				$('#tdSalary', $root).html(model.get('salary'));
-			});
-			model.subscribe('basic', function(){
-				$('#tdBasic', $root).html(model.get('basic'));
-			});
-			model.subscribe('hra', function(){
-				$('#tdHra', $root).html(model.get('hra'));
-			});
-			model.subscribe('da', function(){
-				$('#tdDa', $root).html(model.get('da'));
-			});
-			model.subscribe('tax', function(){
-				$('#tdTax', $root).html(model.get('tax'));
-			});
+			model.subscribe('salary', this.render);
+			model.subscribe('basic', this.render);
+			model.subscribe('hra', this.render);
+			model.subscribe('da', this.render);
+			model.subscribe('tax', this.render);
 		}
 
 
 
 		$(function(){
 
-			window.model = new SalaryCalculatorModel();
+			/*window.model = new SalaryCalculatorModel();
 
 			var v1 = new SalaryCalculator(model);
 			v1.$root.appendTo(document.body);
@@ -167,7 +172,7 @@
 
 			var v2 = new SalaryCalculator(model);
 			v2.$root.appendTo(document.body);
-			v2.render();
+			v2.render();*/
 
 		});
 	</script>
